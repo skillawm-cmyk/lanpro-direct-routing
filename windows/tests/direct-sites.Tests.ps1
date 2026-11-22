@@ -11,6 +11,9 @@ function Assert-Contains([string]$Text, [string]$Needle, [string]$Message) {
 
 . $ScriptPath
 
+$centralConfig = Get-Content -Raw (Join-Path $PSScriptRoot '..\..\direct-sites.json') | ConvertFrom-Json
+Assert-True (Test-DirectConfig $centralConfig) 'published central config should pass Windows validation'
+
 $valid = @'
 {"version":1,"rules":[{"type":"DOMAIN-SUFFIX","value":"moysklad.ru","policy":"DIRECT"}],"fixed_routes":[{"ipv4":"83.217.192.28","domains":["maily.life"],"include_www":true,"enabled":true},{"ipv4":"185.171.82.97","domains":[],"include_www":false,"enabled":true}]}
 '@ | ConvertFrom-Json
@@ -39,7 +42,7 @@ Assert-True ($commands.Count -eq 3) 'fixed and resolved IPs should each receive 
 Assert-Contains ($commands -join "`n") '-p add 83.217.192.28 mask 255.255.255.255 192.168.0.1' 'route must be persistent and use physical gateway'
 
 $ruleLines = Get-StashRuleLines $valid
-Assert-True ($ruleLines.Count -eq 1) 'central Stash rules should render'
-Assert-Contains $ruleLines[0] 'DOMAIN-SUFFIX,moysklad.ru,DIRECT' 'Stash rule should preserve type and policy'
+Assert-True (@($ruleLines).Count -eq 1) 'central Stash rules should render'
+Assert-Contains ($ruleLines -join "`n") 'DOMAIN-SUFFIX,moysklad.ru,DIRECT' 'Stash rule should preserve type and policy'
 
 Write-Host 'PASS windows client tests'
