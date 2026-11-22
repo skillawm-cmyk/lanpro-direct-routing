@@ -44,9 +44,15 @@ class TestSocks(socketserver.StreamRequestHandler):
         self.wfile.write(b"HTTP/1.1 200 OK\r\nContent-Length: 9\r\nConnection: close\r\n\r\nUSA-SOCKS")
 
 
+class UdpOrigin(socketserver.BaseRequestHandler):
+    def handle(self):
+        data, sock = self.request
+        sock.sendto(data, self.client_address)
+
+
 class MihomoTest(unittest.TestCase):
-    def start_server(self, handler):
-        server = socketserver.ThreadingTCPServer(("127.0.0.1", 0), handler)
+    def start_server(self, handler, server_type=socketserver.ThreadingTCPServer):
+        server = server_type(("127.0.0.1", 0), handler)
         worker = threading.Thread(target=server.serve_forever, daemon=True)
         worker.start()
         self.addCleanup(server.server_close)
@@ -56,6 +62,7 @@ class MihomoTest(unittest.TestCase):
     def test_real_engine_direct_proxy_and_no_fallback(self):
         mihomo = os.environ["MIHOMO_BIN"]
         origin = self.start_server(HttpOrigin)
+        udp_origin = self.start_server(UdpOrigin, socketserver.ThreadingUDPServer)
         origin.visits = 0
         socks = self.start_server(TestSocks)
         socks.visits = []
@@ -117,6 +124,22 @@ class MihomoTest(unittest.TestCase):
                     self.assertNotEqual(request("example.net")[0], 200)
                     self.assertEqual(request("lanpro.uz"), (200, b"DIRECT"))
                     self.assertEqual(origin.visits, len(DIRECT) + 1)
+
+                    def udp_request(destination, payload, timeout):
+                        with socket.create_connection(("127.0.0.1", listen), timeout=5) as control, control.makefile("rb") as reply, socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp:
+                            control.sendall(bytes.fromhex("050100"))
+                            self.assertEqual(reply.read(2), bytes.fromhex("0500"))
+                            control.sendall(bytes.fromhex("05030001000000000000"))
+                            self.assertEqual(reply.read(4), bytes.fromhex("05000001"))
+                            relay = (socket.inet_ntoa(reply.read(4)), int.from_bytes(reply.read(2), "big"))
+                            port = udp_origin.server_address[1].to_bytes(2, "big")
+                            udp.settimeout(timeout)
+                            udp.sendto(b"\0\0\0" + destination + port + payload, relay)
+                            return udp.recv(1024)
+
+                    self.assertTrue(udp_request(b"\x03\x09lanpro.uz", b"allowed", 3).endswith(b"allowed"))
+                    with self.assertRaises(socket.timeout):
+                        udp_request(b"\x01\x7f\x00\x00\x01", b"must-not-bypass", 1)
                 except Exception:
                     log.seek(0)
                     print(log.read().decode(errors="replace"))

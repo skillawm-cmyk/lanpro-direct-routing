@@ -53,5 +53,5 @@
       "proxy": "USA-SOCKS"
     }
   },
-  "rules": ["RULE-SET,lanpro-direct,DIRECT", "MATCH,USA-SOCKS"]
+  "rules": ["RULE-SET,lanpro-direct,DIRECT", "NETWORK,udp,REJECT", "MATCH,USA-SOCKS"]
 }

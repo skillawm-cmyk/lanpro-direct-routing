@@ -23,7 +23,8 @@ class PolicyTest(unittest.TestCase):
         windows = json.loads((ROOT / "windows/profile.template.json").read_text())
         for profile in (stash, windows):
             self.assertEqual(profile["mode"], "rule")
-            self.assertEqual(profile["rules"], ROUTES)
+            expected = ROUTES if profile is stash else [ROUTES[0], "NETWORK,udp,REJECT", ROUTES[1]]
+            self.assertEqual(profile["rules"], expected)
             provider = profile["rule-providers"]["lanpro-direct"]
             self.assertEqual(provider["url"], PROVIDER_URL)
             self.assertEqual(provider["behavior"], "classical")
