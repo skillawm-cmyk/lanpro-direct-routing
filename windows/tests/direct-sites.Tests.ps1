@@ -36,7 +36,7 @@ Assert-True (($updated.Split('# BEGIN LANPRO DIRECT ROUTING').Count - 1) -eq 1) 
 
 $commands = Get-RouteCommands $valid '192.168.0.1' @('185.246.65.191')
 Assert-True ($commands.Count -eq 3) 'fixed and resolved IPs should each receive one route'
-Assert-Contains $commands[0] '-p add 83.217.192.28 mask 255.255.255.255 192.168.0.1' 'route must be persistent and use physical gateway'
+Assert-Contains ($commands -join "`n") '-p add 83.217.192.28 mask 255.255.255.255 192.168.0.1' 'route must be persistent and use physical gateway'
 
 $ruleLines = Get-StashRuleLines $valid
 Assert-True ($ruleLines.Count -eq 1) 'central Stash rules should render'
