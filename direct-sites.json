@@ -1,6 +1,37 @@
 {
   "version": 1,
-  "routes": [
+  "rules": [
+    {"type": "DOMAIN-SUFFIX", "value": "ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "su", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "bitrix24.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "bitrix24.net", "policy": "DIRECT"},
+    {"type": "DOMAIN", "value": "ciscoshop.su", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "sberbank.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "alfabank.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "avito.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "ozon.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN", "value": "id.ozon.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN", "value": "api.ozon.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN", "value": "api-seller.ozon.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "gosuslugi.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN", "value": "esia.gosuslugi.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN", "value": "lk.gosuslugi.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "loveplanet.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN", "value": "api.loveplanet.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN", "value": "parking.mos.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN", "value": "api.parking.mos.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "yandex.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "moysklad.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "timeweb.cloud", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "s4b.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "kontur.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "ihc.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "terapc.ru", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "goofish.com", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "wechat.com", "policy": "DIRECT"},
+    {"type": "DOMAIN-SUFFIX", "value": "dzen.ru", "policy": "DIRECT"}
+  ],
+  "fixed_routes": [
     {
       "ipv4": "83.217.192.28",
       "domains": ["maily.life"],

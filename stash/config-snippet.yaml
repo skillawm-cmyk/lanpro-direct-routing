@@ -1,0 +1,11 @@
+rule-providers:
+  lanpro-direct:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/skillawm-cmyk/lanpro-direct-routing/main/stash/direct-rules.yaml
+    path: ./rule-providers/lanpro-direct.yaml
+    interval: 1800
+
+rules:
+  - RULE-SET,lanpro-direct,DIRECT
+  - MATCH,USA-SOCKS

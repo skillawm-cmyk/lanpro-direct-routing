@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 DOMAIN_RE = re.compile(r"^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$")
+TLD_RE = re.compile(r"^[a-z]{2,63}$")
 
 
 def validate(path: Path) -> list[str]:
@@ -14,9 +15,34 @@ def validate(path: Path) -> list[str]:
     errors: list[str] = []
     if data.get("version") != 1:
         errors.append("unsupported version")
-    routes = data.get("routes")
+    rules = data.get("rules")
+    if not isinstance(rules, list) or not rules:
+        errors.append("rules must be a non-empty array")
+    else:
+        seen_rules: set[tuple[str, str]] = set()
+        for index, rule in enumerate(rules):
+            if not isinstance(rule, dict):
+                errors.append(f"rule {index} must be an object")
+                continue
+            rule_type = rule.get("type")
+            value = rule.get("value")
+            if rule_type not in {"DOMAIN", "DOMAIN-SUFFIX"}:
+                errors.append(f"rule {index} has invalid type")
+            valid_value = isinstance(value, str) and (
+                DOMAIN_RE.fullmatch(value) or (rule_type == "DOMAIN-SUFFIX" and TLD_RE.fullmatch(value))
+            )
+            if not valid_value:
+                errors.append(f"rule {index} has invalid domain")
+                continue
+            key = (rule_type, value)
+            if key in seen_rules:
+                errors.append(f"duplicate rule: {rule_type},{value}")
+            seen_rules.add(key)
+            if rule.get("policy") != "DIRECT":
+                errors.append(f"rule {index} policy must be DIRECT")
+    routes = data.get("fixed_routes")
     if not isinstance(routes, list) or not routes:
-        return errors + ["routes must be a non-empty array"]
+        return errors + ["fixed_routes must be a non-empty array"]
 
     seen_ips: set[str] = set()
     domain_ips: dict[str, str] = {}
@@ -62,6 +88,18 @@ if __name__ == "__main__":
         expected_valid = path.name.startswith("valid-") or path.name == "direct-sites.json"
         try:
             errors = validate(path)
+            if path.name == "direct-sites.json" and not errors:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                actual = {(rule["type"], rule["value"], rule["policy"]) for rule in data["rules"]}
+                expected_path = path.parent / "tests" / "expected-rules.txt"
+                expected = {
+                    tuple(line.strip().split(","))
+                    for line in expected_path.read_text(encoding="utf-8").splitlines()
+                    if line.strip() and not line.startswith("#")
+                }
+                missing = sorted(expected - actual)
+                if missing:
+                    errors.append(f"missing central rules: {missing}")
         except (OSError, json.JSONDecodeError) as exc:
             errors = [str(exc)]
         actual_valid = not errors

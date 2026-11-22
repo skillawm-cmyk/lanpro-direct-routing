@@ -4,10 +4,24 @@
   "title": "LANPRO direct routes",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "routes"],
+  "required": ["version", "rules", "fixed_routes"],
   "properties": {
     "version": {"const": 1},
-    "routes": {
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "value", "policy"],
+        "properties": {
+          "type": {"enum": ["DOMAIN", "DOMAIN-SUFFIX"]},
+          "value": {"type": "string", "pattern": "^(?=.{2,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)*[a-z]{2,63}$"},
+          "policy": {"const": "DIRECT"}
+        }
+      }
+    },
+    "fixed_routes": {
       "type": "array",
       "minItems": 1,
       "items": {

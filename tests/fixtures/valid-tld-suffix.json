@@ -1,0 +1,1 @@
+{"version":1,"rules":[{"type":"DOMAIN-SUFFIX","value":"ru","policy":"DIRECT"},{"type":"DOMAIN-SUFFIX","value":"su","policy":"DIRECT"}],"fixed_routes":[{"ipv4":"46.254.21.127","domains":[],"include_www":false,"enabled":true}]}
