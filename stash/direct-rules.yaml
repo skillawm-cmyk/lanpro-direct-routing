@@ -1,9 +1,13 @@
 payload:
   - DOMAIN-SUFFIX,ru
   - DOMAIN-SUFFIX,su
+  - DOMAIN-SUFFIX,lanpro.uz
+  - DOMAIN-SUFFIX,maily.life
+  - DOMAIN-SUFFIX,ai-os.pro
   - DOMAIN-SUFFIX,bitrix24.ru
   - DOMAIN-SUFFIX,bitrix24.net
   - DOMAIN,ciscoshop.su
+  - DOMAIN,bitrix.ciscoshop.su
   - DOMAIN-SUFFIX,sberbank.ru
   - DOMAIN-SUFFIX,alfabank.ru
   - DOMAIN-SUFFIX,avito.ru

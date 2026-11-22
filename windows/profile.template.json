@@ -1,0 +1,57 @@
+{
+  "mode": "rule",
+  "allow-lan": false,
+  "bind-address": "127.0.0.1",
+  "mixed-port": 17890,
+  "log-level": "info",
+  "ipv6": true,
+  "tun": {
+    "enable": true,
+    "stack": "mixed",
+    "auto-route": true,
+    "auto-detect-interface": true,
+    "strict-route": true,
+    "dns-hijack": ["any:53", "tcp://any:53"]
+  },
+  "dns": {
+    "enable": true,
+    "ipv6": true,
+    "enhanced-mode": "fake-ip",
+    "use-system-hosts": false,
+    "default-nameserver": ["https://1.1.1.1/dns-query"],
+    "proxy-server-nameserver": ["https://1.1.1.1/dns-query#DIRECT"],
+    "direct-nameserver": ["https://1.1.1.1/dns-query#DIRECT"],
+    "nameserver": ["https://1.1.1.1/dns-query#USA-SOCKS"],
+    "nameserver-policy": {"rule-set:lanpro-direct": "https://1.1.1.1/dns-query#DIRECT"}
+  },
+  "profile": {"store-fake-ip": true},
+  "proxies": [
+    {
+      "name": "Tailnet",
+      "type": "tailscale",
+      "accept-routes": false,
+      "state-dir": "./tailnet"
+    },
+    {
+      "name": "USA-SOCKS",
+      "type": "socks5",
+      "server": "__USA_SOCKS_ADDRESS__",
+      "port": 1080,
+      "udp": false,
+      "dialer-proxy": "Tailnet"
+    }
+  ],
+  "rule-providers": {
+    "lanpro-direct": {
+      "type": "http",
+      "behavior": "classical",
+      "format": "yaml",
+      "url": "https://raw.githubusercontent.com/skillawm-cmyk/lanpro-direct-routing/main/stash/direct-rules.yaml",
+      "path": "./rule-providers/lanpro-direct.yaml",
+      "interval": 1800,
+      "size-limit": 32768,
+      "proxy": "USA-SOCKS"
+    }
+  },
+  "rules": ["RULE-SET,lanpro-direct,DIRECT", "MATCH,USA-SOCKS"]
+}

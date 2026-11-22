@@ -1,1 +1,0 @@
-{"version":1,"rules":[{"type":"DOMAIN","value":"lanpro.uz","policy":"DIRECT"}],"fixed_routes":[{"ipv4":"999.1.1.1","domains":[],"include_www":false,"enabled":true}]}

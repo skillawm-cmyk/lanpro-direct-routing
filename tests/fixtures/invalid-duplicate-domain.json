@@ -1,1 +1,0 @@
-{"version":1,"rules":[{"type":"DOMAIN","value":"lanpro.uz","policy":"DIRECT"}],"fixed_routes":[{"ipv4":"46.254.21.127","domains":["lanpro.uz","lanpro.uz"],"include_www":true,"enabled":true}]}

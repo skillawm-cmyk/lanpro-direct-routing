@@ -1,66 +1,41 @@
 # LANPRO Direct Routing
 
-Централизованный список сайтов, которые должны идти напрямую, даже когда включён VPN. Остальной трафик продолжает идти по последнему правилу `MATCH,USA-SOCKS`.
+Один [список доменов](stash/direct-rules.yaml) для Mihomo на Windows и Stash. Зоны `.ru` и `.su`, LANPRO, Maily, AI-OS и отдельные домены из списка используют `DIRECT`. Для остальных соединений, которые обрабатывает профиль, конечное правило `MATCH,USA-SOCKS` не имеет прямого резерва: при отказе SOCKS соединение не открывается.
 
-## Что включено
+Правила работают по доменам, а не по общим IP CDN. Никаких записей в системный `hosts`, постоянных маршрутов, фоновых заданий или запуска скачанных скриптов с правами администратора. Профиль Mihomo включает TUN для трафика приложений на время работы ядра; это не системный kill switch при остановке Mihomo.
 
-- Все домены зон `.ru` и `.su` через `DOMAIN-SUFFIX`.
-- Правила Bitrix24, CiscoShop, банки, Avito, Ozon, Госуслуги, LovePlanet и parking.mos.ru.
-- Yandex, МойСклад, Timeweb, S4B, Контур, IHC, TeraPC, Goofish, WeChat и Dzen.
-- Фиксированные прямые маршруты из активного профиля v2RayTun/Stash, включая LANPRO.
-- Автоматическая синхронизация на Windows и macOS каждые 30 минут.
+## Второй Windows
 
-Главный файл для добавления сайтов: [`direct-sites.json`](direct-sites.json). После изменения нужно синхронно обновить `stash/direct-rules.yaml`; тест не позволит опубликовать рассинхронизированные файлы.
+1. Возьмите [официальный Mihomo v1.19.34](https://github.com/MetaCubeX/mihomo/releases/tag/v1.19.34) для архитектуры компьютера. Сверьте `Get-FileHash -Algorithm SHA256 <архив>` перед распаковкой: x64 compatible `cd6738d4648cc1a5f48049a1343b697ab510889d648f045c5c780fc1ab443a79`, ARM64 `076cb04a21377675bcf009b8d1dd83006ce2464aa537e37bce1faf6d3504f554`.
+2. В обычном PowerShell, в каталоге этого репозитория, подготовьте профиль. Введите Tailscale IPv4 вашего USA-SOCKS, а не публичный IP сервера. По умолчанию порт `1080`.
 
-## Подключение Stash / Mihomo
+   ```powershell
+   $Socks = Read-Host 'Tailscale IPv4 of USA-SOCKS'
+   powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\windows\New-DirectProfile.ps1 -SocksAddress $Socks
+   ```
 
-Добавьте блоки из [`stash/config-snippet.yaml`](stash/config-snippet.yaml) в профиль. Правило
+3. В PowerShell **от имени администратора под тем же пользователем**, в каталоге распакованного Mihomo, выполните проверку и запуск. Это единственный шаг, которому нужны права администратора для TUN.
 
-```yaml
-- RULE-SET,lanpro-direct,DIRECT
-```
+   ```powershell
+   $homeDir = Join-Path $env:LOCALAPPDATA 'LANPRO-Mihomo'
+   $core = (Get-ChildItem -File -Filter 'mihomo*.exe' | Select-Object -First 1).FullName
+   if (-not $core) { throw 'Open the folder containing the verified Mihomo executable.' }
+   $config = Join-Path $homeDir 'config.json'
+   & $core -t -d $homeDir -f $config
+   if ($LASTEXITCODE -ne 0) { throw 'Mihomo did not validate the profile.' }
+   & $core -d $homeDir -f $config
+   ```
 
-должно находиться выше `MATCH,USA-SOCKS`. Stash обновляет список каждые 1800 секунд без ручного редактирования профиля.
+При первом обращении через `USA-SOCKS` Mihomo покажет ссылку входа Tailscale. Войдите в тот же Tailnet и одобрите устройство, если это требует ваша политика. Отдельная установка Tailscale не нужна для этого профиля: Tailnet встроен в Mihomo и используется как транспорт к SOCKS. Не включайте отдельный Tailscale Exit Node, другой VPN или системный прокси поверх этого профиля: они могут перехватить прямой маршрут или создать петлю.
 
-## Windows
+**Проверка на ПК.** Откройте `https://lanpro.uz/` и `https://example.com/`; в окне Mihomo первый должен показать `DIRECT`, второй `USA-SOCKS`. Сравните внешний IP на обоих выходах, если уже пользуетесь доверенным сервисом проверки адреса. Если `USA-SOCKS` недоступен, сначала проверьте вход и доступ Tailnet к SOCKS. Не выбирайте в клиенте режим Global или Direct. Этот SOCKS-профиль не пересылает UDP; приложения без TCP-резерва могут не работать для проксируемых адресов. Для отката закройте Mihomo через `Ctrl+C`.
 
-Откройте PowerShell от имени администратора:
+## Stash
 
-```powershell
-Invoke-WebRequest https://raw.githubusercontent.com/skillawm-cmyk/lanpro-direct-routing/main/install-windows.ps1 -OutFile $env:TEMP\install-lanpro-routing.ps1
-powershell -ExecutionPolicy Bypass -File $env:TEMP\install-lanpro-routing.ps1
-```
+Добавьте `lanpro-direct` из [фрагмента профиля](stash/config-snippet.yaml) и поставьте `RULE-SET,lanpro-direct,DIRECT` перед `MATCH,USA-SOCKS`. Фрагмент дополняет существующий `USA-SOCKS`, не переопределяет его. Объединяйте секции `dns`, `rules` и `rule-providers` с существующими, не создавая дубликатов YAML-ключей. Для DNS Stash использует прямые запросы при `follow-rule: false`; это касается и DNS-запросов проксируемых сайтов, но не их соединений. В Windows-профиле выше DNS по умолчанию идёт через SOCKS, а для выбранных доменов задан отдельный прямой DoH.
 
-Команды после установки:
+## Обновления и старый установщик
 
-```powershell
-& "$env:ProgramData\LanproDirectRouting\direct-sites.ps1" status
-& "$env:ProgramData\LanproDirectRouting\direct-sites.ps1" sync
-& "$env:ProgramData\LanproDirectRouting\direct-sites.ps1" test lanpro.uz
-& "$env:ProgramData\LanproDirectRouting\direct-sites.ps1" uninstall
-```
+Меняйте только `stash/direct-rules.yaml`. Клиенты запрашивают обновление каждые 30 минут. Windows-профиль начинает с локальной копии и обновляет её через `USA-SOCKS`; без доступного сервера новая версия не загрузится. Не публикуйте в этом репозитории IP Tailnet, ключи, ссылки входа или папку состояния Mihomo.
 
-## macOS
-
-```bash
-curl -fL https://raw.githubusercontent.com/skillawm-cmyk/lanpro-direct-routing/main/install-macos.sh -o /tmp/install-lanpro-routing.sh
-sudo sh /tmp/install-lanpro-routing.sh
-```
-
-Команды после установки:
-
-```bash
-sudo "/Library/Application Support/LanproDirectRouting/direct-sites.sh" sync
-"/Library/Application Support/LanproDirectRouting/direct-sites.sh" status
-"/Library/Application Support/LanproDirectRouting/direct-sites.sh" test lanpro.uz
-sudo "/Library/Application Support/LanproDirectRouting/direct-sites.sh" uninstall
-```
-
-## Как добавить сайт
-
-1. Добавьте правило в `rules` файла `direct-sites.json`.
-2. Добавьте соответствующую строку без `,DIRECT` в `stash/direct-rules.yaml`.
-3. Для сервера с постоянным IP при необходимости добавьте запись в `fixed_routes`.
-4. Запустите `bash tests/validate-config.sh && bash tests/package-check.sh`.
-
-Клиенты полностью проверяют новый JSON до применения. При ошибке или недоступности GitHub используется последняя корректная копия.
+Старые `install-windows.ps1` и `install-macos.sh` выведены из эксплуатации. Если старый установщик уже выполнялся, не запускайте скачанное ранее удаление: оно не различало свои и пользовательские маршруты. Перед переходом отдельно проверьте, есть ли задача `LANPRO Direct Routing` (`Get-ScheduledTask -TaskName 'LANPRO Direct Routing' -ErrorAction SilentlyContinue`) или macOS LaunchDaemon `uz.lanpro.direct-routing`. Не удаляйте вручную добавленный маршрут LANPRO. Новый профиль их не меняет.

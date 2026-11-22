@@ -4,23 +4,47 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  config:
+  routing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: bash tests/validate-config.sh
-      - run: bash tests/package-check.sh
-
-  macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: bash macos/tests/direct-sites-test.sh
+      - uses: actions/checkout@v6
+      - run: python3 tests/test-policy.py
+      - name: Test policy with official Mihomo core
+        run: |
+          core="$RUNNER_TEMP/mihomo"
+          curl -fsSL --max-time 90 https://github.com/MetaCubeX/mihomo/releases/download/v1.19.34/mihomo-linux-amd64-compatible-v1.19.34.gz -o "$core.gz"
+          printf '%s  %s\n' 2763f5b414527f7baf6dc57e3f82f3ab561eedf34bfd7c2f2cde1f7e592efe06 "$core.gz" | sha256sum -c
+          gunzip "$core.gz"
+          chmod +x "$core"
+          MIHOMO_BIN="$core" python3 tests/test-mihomo.py
+      - name: Verify retired installer cannot execute
+        run: '! sh install-macos.sh'
 
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - shell: pwsh
-        run: ./windows/tests/direct-sites.Tests.ps1
+      - uses: actions/checkout@v6
+      - name: Test profile preparation in Windows PowerShell 5.1
+        shell: powershell
+        run: ./tests/windows-profile.Tests.ps1
+      - name: Test policy with official Windows Mihomo core
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $archive = Join-Path $env:RUNNER_TEMP 'mihomo.zip'
+          $coreDir = Join-Path $env:RUNNER_TEMP 'mihomo'
+          Invoke-WebRequest -UseBasicParsing https://github.com/MetaCubeX/mihomo/releases/download/v1.19.34/mihomo-windows-amd64-compatible-v1.19.34.zip -OutFile $archive
+          if ((Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash -ne 'cd6738d4648cc1a5f48049a1343b697ab510889d648f045c5c780fc1ab443a79') { throw 'Mihomo checksum did not match.' }
+          Expand-Archive -LiteralPath $archive -DestinationPath $coreDir
+          $env:MIHOMO_BIN = (Get-ChildItem $coreDir -Filter 'mihomo*.exe' -File -Recurse | Select-Object -First 1).FullName
+          python tests/test-mihomo.py
+      - name: Verify retired installer cannot execute
+        shell: powershell
+        run: |
+          $rejected = $false
+          try { ./install-windows.ps1 } catch { $rejected = $_.Exception.Message.StartsWith('Retired:') }
+          if (-not $rejected) { throw 'Legacy installer was not rejected.' }
