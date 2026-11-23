@@ -7,6 +7,8 @@ payload:
   - DOMAIN-SUFFIX,bitrix24.ru
   - DOMAIN-SUFFIX,bitrix24.net
   - DOMAIN,rtc-cloud.bitrix24.tech
+  - DOMAIN-SUFFIX,bitrix24.tech
+  - DOMAIN-SUFFIX,bitrix.info
   - DOMAIN,ciscoshop.su
   - DOMAIN,bitrix.ciscoshop.su
   - DOMAIN-SUFFIX,sberbank.ru

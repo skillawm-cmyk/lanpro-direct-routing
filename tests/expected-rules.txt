@@ -1,6 +1,8 @@
 DOMAIN-SUFFIX,bitrix24.ru,DIRECT
 DOMAIN-SUFFIX,bitrix24.net,DIRECT
 DOMAIN,rtc-cloud.bitrix24.tech,DIRECT
+DOMAIN-SUFFIX,bitrix24.tech,DIRECT
+DOMAIN-SUFFIX,bitrix.info,DIRECT
 DOMAIN,ciscoshop.su,DIRECT
 DOMAIN,bitrix.ciscoshop.su,DIRECT
 DOMAIN-SUFFIX,sberbank.ru,DIRECT
