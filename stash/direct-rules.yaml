@@ -6,6 +6,7 @@ payload:
   - DOMAIN-SUFFIX,ai-os.pro
   - DOMAIN-SUFFIX,bitrix24.ru
   - DOMAIN-SUFFIX,bitrix24.net
+  - DOMAIN,rtc-cloud.bitrix24.tech
   - DOMAIN,ciscoshop.su
   - DOMAIN,bitrix.ciscoshop.su
   - DOMAIN-SUFFIX,sberbank.ru
