@@ -13,8 +13,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DIRECT = ("lanpro.uz", "www.lanpro.uz", "example.su", "sub.anything.ru", "api.bitrix24.net", "rtc-cloud.bitrix24.tech", "media.bitrix24.tech", "rtc-cloud.bitrix.info", "www.goofish.com", "a.timeweb.cloud", "api.wechat.com", "bidzaar.com", "www.bidzaar.com", "api.bidzaar.com")
-PROXY = ("example.net", "ru.example.net", "notbitrix24.net", "evilwechat.com", "lanpro.uz.example.net", "rtc-cloud.bitrix24.tech.example.net", "bitrix.info.example.net", "notbidzaar.com", "bidzaar.com.example.net")
+DIRECT = ("lanpro.uz", "www.lanpro.uz", "example.su", "sub.anything.ru", "api.bitrix24.net", "rtc-cloud.bitrix24.tech", "media.bitrix24.tech", "rtc-cloud.bitrix.info", "www.goofish.com", "a.timeweb.cloud", "api.wechat.com", "bidzaar.com", "www.bidzaar.com", "api.bidzaar.com", "mail.timeweb.com", "timeweb.com")
+PROXY = ("example.net", "ru.example.net", "notbitrix24.net", "evilwechat.com", "lanpro.uz.example.net", "rtc-cloud.bitrix24.tech.example.net", "bitrix.info.example.net", "notbidzaar.com", "bidzaar.com.example.net", "nottimeweb.com", "mail.timeweb.com.example.net")
 
 
 class HttpOrigin(socketserver.StreamRequestHandler):

@@ -29,6 +29,7 @@ payload:
   - DOMAIN-SUFFIX,yandex.ru
   - DOMAIN-SUFFIX,moysklad.ru
   - DOMAIN-SUFFIX,timeweb.cloud
+  - DOMAIN-SUFFIX,timeweb.com
   - DOMAIN-SUFFIX,s4b.ru
   - DOMAIN-SUFFIX,kontur.ru
   - DOMAIN-SUFFIX,ihc.ru
